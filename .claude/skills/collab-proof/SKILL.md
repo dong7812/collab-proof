@@ -15,15 +15,25 @@ Classify signal level using this rubric (pick the highest that matches):
 - New file created, OR
 - 4+ files modified, OR
 - Explicit option comparison in conversation ("vs", "instead of", "chose X over Y"), OR
-- Bug diagnosed and fixed, OR
-- Design discussion lasted 15+ exchanges
+- Design discussion lasted 15+ exchanges, OR
+- **Bug with root cause diagnosis** — conversation contains WHY the bug happened
+  (not just "fixed X" but "the bug was caused by Y because Z")
+
+**BUG_FIXING special rule** — override file count:
+Even if only 1 file changed, classify as HIGH if the conversation contains:
+- Root cause explanation ("the bug was...", "this happened because...", "the issue is...")
+- Diagnosis process ("I checked...", "turned out...", "the problem was...")
+- Fix rationale ("chose this approach because...", "instead of X, used Y because...")
+File count doesn't matter for bugs — a well-diagnosed single-file fix is more valuable
+than a 10-file feature with no discussion.
 
 **MEDIUM** → WORKLOG only
-- 1–3 files modified with no major discussion, OR
+- 1–3 files modified with no root cause discussion, OR
 - Minor feature added, no tradeoffs discussed
 
 **LOW** → silence, tell user "Routine session — nothing recorded."
-- No code changes, only planning/discussion
+- No code changes, only planning/discussion, OR
+- Single trivial change with no context ("change this text", "fix typo", "rename variable")
 
 Show the user: `Signal: HIGH / MEDIUM / LOW — [one-line reason]`
 
@@ -75,6 +85,25 @@ Classify dominant intent from survivors:
 ```
 
 If no real fork existed → write nothing. Never fabricate decisions.
+
+**BUG_FIXING intent: use this format instead:**
+
+```markdown
+## [YYYY-MM-DD] <bug title>
+
+**Root cause**: what actually caused the bug — the WHY, not just the what
+**Symptom**: what the developer observed
+**Fix**: what was changed
+**Why this fix**: rationale — inferred if not stated explicitly
+**Alternative fixes considered**: other approaches discussed (if any)
+**AI contribution**:
+  - Identified: [Frame D — did Claude spot the root cause?]
+  - Suggested: [Frame D — fix approach or diagnostic step]
+  - Developer-driven: [what the developer diagnosed/decided independently]
+**Intent class**: BUG_FIXING
+**Signal score**: HIGH
+**Outcome**: fixed | workaround | deferred
+```
 
 **Create `session-history/YYYY-MM-DD-HHMM.md`**:
 

@@ -194,6 +194,31 @@ Both hooks are no-ops outside a git repository and exit 0 silently.
 
 ---
 
+## When it helps — and when it doesn't
+
+collab-proof is signal-filtered. It produces nothing for routine sessions and full artifacts only when something worth recording actually happened.
+
+**Produces useful output:**
+
+| Session type | Why it's valuable |
+|---|---|
+| Design decision with alternatives | Records the fork — what was chosen and what was ruled out |
+| Bug with root cause diagnosis | Captures the WHY, not just the fix — impossible to reconstruct from git log |
+| Direction change mid-session | Frame B catches the uncertainty; documents what changed and why |
+| Architecture discussion | Multiple frames fire; AI contribution field separates Claude's input from developer judgment |
+
+**Produces little or nothing:**
+
+| Session type | Why |
+|---|---|
+| "Change this text / fix this typo" | No decision, no diagnosis — nothing to infer |
+| Pure implementation with no discussion | File changes exist but no reasoning to capture |
+| Planning session with no code | LOW signal — no git changes to ground the narrative |
+
+**The honest version:** roughly 30–40% of sessions produce genuinely useful artifacts. The rest are correctly silenced. A WORKLOG checkpoint still runs on active turns, so even quiet sessions leave a minimal trace.
+
+---
+
 ## Roadmap
 
 - [x] Vela 3-layer pipeline (prompt-native, no Python install)
