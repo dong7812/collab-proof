@@ -10,6 +10,18 @@ Most session-logging tools answer *"what did we talk about?"* collab-proof answe
 
 ---
 
+## Why I built this
+
+When you're deep in a coding session with AI, you move fast. A decision gets made, a tradeoff gets discussed, a bug gets caught — and then you're already on to the next thing.
+
+Later, you can't reconstruct it. The git log shows *what* changed. The conversation is gone or compacted. The reasoning that led to `Lua EVAL over MULTI/EXEC`, the moment Claude spotted the race condition you missed, the alternative you consciously ruled out — all of it evaporates.
+
+I built collab-proof because I wanted a way to **capture what I missed while I was moving**. Not a manual journal. Not a summary I'd forget to write. Something that watches the session, infers what mattered, and holds it for me — so I can review it later and know exactly what happened and why.
+
+The review step is the point. The artifacts aren't just documentation — they're a checkpoint you come back to: *did the AI actually contribute something meaningful here, or did I just execute manually? what decision am I about to build on top of? what was I uncertain about that I should revisit?*
+
+---
+
 ## Scope
 
 - Claude Code skill (`SKILL.md`) + slash command (`/session-proof`) + two lifecycle hooks.
