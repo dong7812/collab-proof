@@ -1,4 +1,4 @@
-# /session-proof
+# /collab-proof
 
 Generate AI collaboration evidence for the current session, then export a shareable HTML proof.
 

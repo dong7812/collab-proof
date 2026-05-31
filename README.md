@@ -24,7 +24,7 @@ The review step is the point. The artifacts aren't just documentation — they'r
 
 ## Scope
 
-- Claude Code skill (`SKILL.md`) + slash command (`/session-proof`) + two lifecycle hooks.
+- Claude Code skill (`SKILL.md`) + slash command (`/collab-proof`) + two lifecycle hooks.
 - **Zero external dependencies.** The HTML renderer (`render.py`) uses Python stdlib only. No pip install.
 - **Read-only.** Reads git log, git diff, and conversation context. Makes no network calls, writes no config.
 - Generates three artifact types per session: decision log, session narrative, shareable HTML proof.
@@ -35,7 +35,7 @@ The review step is the point. The artifacts aren't just documentation — they'r
 
 ## Pipeline
 
-collab-proof runs a three-layer pipeline on every `/session-proof` invocation.
+collab-proof runs a three-layer pipeline on every `/collab-proof` invocation.
 
 ### Layer 01 — WorkSignalDetector
 
@@ -82,7 +82,7 @@ cd collab-proof
 ```
 ~/.claude/skills/collab-proof/SKILL.md      ← skill definition
 ~/.claude/skills/collab-proof/render.py     ← HTML renderer
-~/.claude/commands/session-proof.md         ← /session-proof command
+~/.claude/commands/collab-proof.md         ← /collab-proof command
 ~/.claude/hooks/collab-proof-on-stop.sh     ← Stop hook (WORKLOG checkpoints)
 ~/.claude/hooks/collab-proof-pre-compact.sh ← PreCompact hook (context checkpoints)
 ```
@@ -96,7 +96,7 @@ And wires the hooks into `~/.claude/settings.json`. Running `install.sh` again i
 Inside any Claude Code session:
 
 ```
-/session-proof
+/collab-proof
 ```
 
 Claude runs the pipeline, writes the artifacts, then calls `python3 render.py` to generate the HTML proof. The command prints all written file paths and the `open` command for the HTML.

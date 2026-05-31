@@ -688,7 +688,7 @@ def main() -> None:
         sessions = sorted(root.glob("session-history/*.md"))
         sessions = [s for s in sessions if not s.name.startswith(".")]
         if not sessions:
-            print("No session-history files found. Run /session-proof first.")
+            print("No session-history files found. Run /collab-proof first.")
             sys.exit(1)
         session_path = sessions[-1]
 

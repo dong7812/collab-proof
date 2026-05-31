@@ -10,7 +10,7 @@ CHECKPOINT="${HISTORY_DIR}/.pre-compact-$(date +%Y%m%d-%H%M%S).txt"
 
 mkdir -p "${HISTORY_DIR}"
 
-# Write a timestamped marker. The next /session-proof run will pick this up.
+# Write a timestamped marker. The next /collab-proof run will pick this up.
 echo "[pre-compact checkpoint] $(date '+%Y-%m-%d %H:%M:%S') — context compaction triggered at ${PROJECT_ROOT}" >> "${CHECKPOINT}"
 
 # Also append a reminder line to WORKLOG if it exists.

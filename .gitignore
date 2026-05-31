@@ -13,3 +13,6 @@ session-history/*-proof.html
 # Test artifacts
 test_file.txt
 /tmp/
+
+# Nested repos
+awesome-claude-skills/

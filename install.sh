@@ -18,14 +18,14 @@ mkdir -p "${SKILLS_DIR}"
 cp "${SCRIPT_DIR}/.claude/skills/collab-proof/SKILL.md" "${SKILLS_DIR}/SKILL.md"
 echo "  ✓ skill        → ${SKILLS_DIR}/SKILL.md"
 
-# 2. Renderer (used by /session-proof automatically)
+# 2. Renderer (used by /collab-proof automatically)
 cp "${SCRIPT_DIR}/render.py" "${SKILLS_DIR}/render.py"
 echo "  ✓ renderer     → ${SKILLS_DIR}/render.py"
 
 # 3. Slash command
 mkdir -p "${COMMANDS_DIR}"
-cp "${SCRIPT_DIR}/commands/session-proof.md" "${COMMANDS_DIR}/session-proof.md"
-echo "  ✓ command      → /session-proof"
+cp "${SCRIPT_DIR}/commands/collab-proof.md" "${COMMANDS_DIR}/collab-proof.md"
+echo "  ✓ command      → /collab-proof"
 
 # 4. Hooks
 mkdir -p "${HOOKS_DIR}"
@@ -78,6 +78,6 @@ PYEOF
 echo ""
 echo "Done. Start a Claude Code session and run:"
 echo ""
-echo "  /session-proof"
+echo "  /collab-proof"
 echo ""
 echo "collab-proof will run the full pipeline and open the HTML proof automatically."

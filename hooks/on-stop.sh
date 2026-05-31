@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stop hook — fires when Claude finishes a turn.
 # Lightweight: checks git for meaningful changes, writes a checkpoint to WORKLOG.
-# Heavy processing stays in /session-proof.
+# Heavy processing stays in /collab-proof.
 
 set -euo pipefail
 
