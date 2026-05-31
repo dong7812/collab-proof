@@ -187,10 +187,11 @@ The `Stop` hook also writes lightweight checkpoints when ≥2 files change betwe
 
 | Hook | Event | Behavior |
 |---|---|---|
+| `SessionEnd` | When the session closes | Automatically runs full pipeline — WORKLOG + session file + HTML proof |
 | `Stop` | End of each Claude turn | If ≥2 files changed in git, appends a checkpoint line to WORKLOG.md |
 | `PreCompact` | Before context compaction | Writes a timestamped checkpoint marker to prevent silent context loss |
 
-Both hooks are no-ops outside a git repository and exit 0 silently.
+All hooks are no-ops outside a git repository and exit 0 silently.
 
 ---
 
@@ -227,7 +228,7 @@ collab-proof is signal-filtered. It produces nothing for routine sessions and fu
 - [x] session-history narrative
 - [x] WORKLOG one-liner + Stop hook checkpoints
 - [x] HTML proof artifact (self-contained, `file://`-ready)
-- [ ] Full automation via `SessionEnd` hook (pending [#59273](https://github.com/anthropics/claude-code/issues/59273))
+- [x] Full automation via `SessionEnd` hook (available since Claude Code 1.0.84)
 - [ ] Git-signed proof (commit hash embedded, tamper-evident)
 - [ ] `awesome-claude-skills` registry listing
 

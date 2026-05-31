@@ -29,11 +29,13 @@ echo "  ✓ command      → /collab-proof"
 
 # 4. Hooks
 mkdir -p "${HOOKS_DIR}"
-cp "${SCRIPT_DIR}/hooks/pre-compact.sh" "${HOOKS_DIR}/collab-proof-pre-compact.sh"
-cp "${SCRIPT_DIR}/hooks/on-stop.sh"    "${HOOKS_DIR}/collab-proof-on-stop.sh"
+cp "${SCRIPT_DIR}/hooks/pre-compact.sh"    "${HOOKS_DIR}/collab-proof-pre-compact.sh"
+cp "${SCRIPT_DIR}/hooks/on-stop.sh"        "${HOOKS_DIR}/collab-proof-on-stop.sh"
+cp "${SCRIPT_DIR}/hooks/on-session-end.sh" "${HOOKS_DIR}/collab-proof-on-session-end.sh"
 chmod +x "${HOOKS_DIR}/collab-proof-pre-compact.sh"
 chmod +x "${HOOKS_DIR}/collab-proof-on-stop.sh"
-echo "  ✓ hooks        → PreCompact + Stop"
+chmod +x "${HOOKS_DIR}/collab-proof-on-session-end.sh"
+echo "  ✓ hooks        → PreCompact + Stop + SessionEnd"
 
 # 5. Wire hooks into settings.json
 [ -f "${SETTINGS}" ] || echo '{}' > "${SETTINGS}"
@@ -63,8 +65,9 @@ def wire(event, script_name):
     return False
 
 wired = []
-if wire("PreCompact", "collab-proof-pre-compact.sh"): wired.append("PreCompact")
-if wire("Stop",       "collab-proof-on-stop.sh"):     wired.append("Stop")
+if wire("PreCompact", "collab-proof-pre-compact.sh"):    wired.append("PreCompact")
+if wire("Stop",       "collab-proof-on-stop.sh"):        wired.append("Stop")
+if wire("SessionEnd", "collab-proof-on-session-end.sh"): wired.append("SessionEnd")
 
 with open(settings_path, "w") as f:
     json.dump(cfg, f, indent=2)
