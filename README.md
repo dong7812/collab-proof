@@ -2,6 +2,8 @@
 
 > A Claude Code skill that infers AI collaboration evidence — not just logs it.
 
+![collab-proof demo](demo/collab-proof-demo.gif)
+
 Most session-logging tools record what happened. collab-proof reasons about **what mattered and why** — using a three-layer signal pipeline that filters noise, classifies intent, and generates shareable proof artifacts.
 
 ```
