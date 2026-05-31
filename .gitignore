@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Generated proof files (user-generated, not part of the skill itself)
+session-history/*-proof.html
+
+# Test artifacts
+test_file.txt
+/tmp/
