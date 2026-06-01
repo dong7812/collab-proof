@@ -98,5 +98,6 @@ collab-proof's pipeline structure traces to the academic literature behind Vela:
 ## Tamper-evident proof
 
 Session HTML is SHA-256 hashed and attached to the current git commit via `git notes`.
-No file tree modification. Shareable via `git push origin refs/notes/commits`.
+No file tree modification. Uses `refs/notes/collab-proof` namespace (separate from default git notes).
+Shareable via `git push origin refs/notes/collab-proof`.
 See `hooks/sign-proof.sh` for implementation.
