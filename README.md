@@ -193,6 +193,11 @@ git notes --ref=collab-proof show
 git push origin refs/notes/collab-proof
 ```
 
+> **Squash Merge warning**: `git notes` are tied to a specific commit SHA. Squash and Merge on GitHub rewrites the hash — the note is orphaned. If your team uses squash merges, use `--commit-footer` to embed the hash in the commit message instead (survives squash):
+> ```bash
+> bash ~/.claude/hooks/collab-proof-sign-proof.sh --commit-footer
+> ```
+
 All hooks are no-ops outside a git repository and exit 0 silently.
 
 ---
@@ -219,6 +224,28 @@ collab-proof is signal-filtered. It produces nothing for routine sessions and fu
 | Planning session with no code | LOW signal — no git changes to ground the narrative |
 
 **The honest version:** roughly 30–40% of sessions produce genuinely useful artifacts. The rest are correctly silenced. A WORKLOG checkpoint still runs on active turns, so even quiet sessions leave a minimal trace.
+
+---
+
+## Sharing the HTML proof
+
+The HTML proof is self-contained (`file://`-ready) but needs to be accessible to share externally.
+
+**Quick options:**
+
+```bash
+# GitHub Gist (one command)
+gh gist create session-history/YYYY-MM-DD-HHMM-proof.html --public
+
+# GitHub Pages (if repo is public)
+# Copy to docs/ and push — GitHub Pages serves it automatically
+
+# Simple local share (same network)
+python3 -m http.server 8080
+# → http://localhost:8080/session-history/YYYY-MM-DD-HHMM-proof.html
+```
+
+For portfolio or hiring use, GitHub Gist is the fastest path — one command, permanent URL, no setup.
 
 ---
 

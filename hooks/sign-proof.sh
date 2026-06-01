@@ -10,6 +10,10 @@
 #   Called automatically by on-session-end.sh after HTML generation.
 #   Can also be run manually: bash ~/.claude/hooks/collab-proof-sign-proof.sh
 #
+#   --commit-footer   Also inject SHA-256 into the last commit message footer.
+#                     Use this when Squash and Merge is your team's workflow —
+#                     git notes are lost on squash, but the commit message survives.
+#
 # Share proof with collaborators:
 #   git push origin refs/notes/collab-proof
 #
@@ -18,6 +22,11 @@
 #   git log --notes=collab-proof
 
 set -euo pipefail
+
+COMMIT_FOOTER=false
+for arg in "$@"; do
+  [ "$arg" = "--commit-footer" ] && COMMIT_FOOTER=true
+done
 
 # 1. Git 저장소 여부 검증
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
@@ -66,6 +75,17 @@ else
     git notes --ref=collab-proof add -m "$NOTE" "$CURRENT_COMMIT"
 fi
 
+# 7. (옵션) Squash Merge 대응 — 커밋 메시지 footer에 SHA-256 주입
+if [ "$COMMIT_FOOTER" = true ]; then
+    CURRENT_MSG=$(git log -1 --format="%B")
+    FOOTER="collab-proof: ${HTML_HASH:0:16}... ($(basename "$LATEST_HTML"))"
+    if ! echo "$CURRENT_MSG" | grep -q "^collab-proof:"; then
+        git commit --amend -m "${CURRENT_MSG}
+
+${FOOTER}" --no-edit 2>/dev/null || true
+    fi
+fi
+
 echo "------------------------------------------------------------"
 echo "  ✓ proof anchored → commit ${SHORT}"
 echo "    SHA-256 : ${HTML_HASH:0:16}..."
@@ -73,4 +93,7 @@ echo "    file    : ${LATEST_HTML}"
 echo ""
 echo "    verify  : git notes --ref=collab-proof show"
 echo "    share   : git push origin refs/notes/collab-proof"
+if [ "$COMMIT_FOOTER" = true ]; then
+echo "    footer  : injected into commit message (squash-safe)"
+fi
 echo "------------------------------------------------------------"

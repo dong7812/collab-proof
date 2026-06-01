@@ -100,4 +100,18 @@ collab-proof's pipeline structure traces to the academic literature behind Vela:
 Session HTML is SHA-256 hashed and attached to the current git commit via `git notes`.
 No file tree modification. Uses `refs/notes/collab-proof` namespace (separate from default git notes).
 Shareable via `git push origin refs/notes/collab-proof`.
+
+### Squash Merge limitation
+
+`git notes` are tied to a specific commit SHA. **Squash and Merge on GitHub rewrites the commit hash**, which orphans the note — the proof is lost on the remote.
+
+Workarounds:
+1. Use **Merge commit** or **Rebase and Merge** instead of Squash when the branch contains collab-proof evidence
+2. Use `sign-proof.sh --commit-footer` to inject the SHA-256 into the commit message body instead of git notes — survives squash because the message is carried into the squashed commit
+
+### Context compaction limitation
+
+Claude Code compacts long conversations to save tokens. If `/collab-proof` runs late in a session, early-session tradeoff discussions may already be gone from context.
+
+Mitigation: `PreCompact` hook fires before each compaction. The `SKILL.md` instructs Claude to save a frame-score snapshot to `session-history/.tmp-TIMESTAMP.json` at this point. At session end, all `.tmp` files are merged before final artifact generation.
 See `hooks/sign-proof.sh` for implementation.
