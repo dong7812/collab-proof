@@ -29,7 +29,7 @@ The review step is the point. The artifacts aren't just documentation — they'r
 - **Read-only.** Reads git log, git diff, and conversation context. Makes no network calls, writes no config.
 - Generates three artifact types per session: decision log, session narrative, shareable HTML proof.
 - Signal filtering: low-signal sessions (routine implementation, no decision forks) produce no output.
-- `SessionEnd` hook is [not yet available in Claude Code](https://github.com/anthropics/claude-code/issues/59273); collab-proof uses `Stop` + `PreCompact` hooks as the current trigger surface.
+- `SessionEnd` hook is supported since Claude Code 1.0.84. collab-proof uses `SessionEnd` (full pipeline on close) + `Stop` (per-turn WORKLOG checkpoint) + `PreCompact` (context compaction marker).
 
 ---
 
@@ -229,7 +229,7 @@ collab-proof is signal-filtered. It produces nothing for routine sessions and fu
 - [x] WORKLOG one-liner + Stop hook checkpoints
 - [x] HTML proof artifact (self-contained, `file://`-ready)
 - [x] Full automation via `SessionEnd` hook (available since Claude Code 1.0.84)
-- [ ] Git-signed proof (commit hash embedded, tamper-evident)
+- [ ] Git-signed proof via `git notes` — attach session HTML hash to the current commit without modifying the file tree (stdlib only, no crypto deps)
 - [ ] `awesome-claude-skills` registry listing
 
 ---

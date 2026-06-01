@@ -78,6 +78,32 @@ else:
     print("  · hooks already present in settings.json")
 PYEOF
 
+# 6. 전역 .gitignore에 collab-proof 산출물 추가 (의도치 않은 커밋 방지)
+GLOBAL_GITIGNORE=$(git config --global core.excludesfile 2>/dev/null || echo "${HOME}/.gitignore_global")
+mkdir -p "$(dirname "$GLOBAL_GITIGNORE")"
+touch "$GLOBAL_GITIGNORE"
+
+GITIGNORE_ENTRIES=(
+  "# collab-proof — AI collaboration evidence artifacts"
+  "session-history/*-proof.html"
+  "WORKLOG.md"
+)
+
+ADDED_ENTRIES=()
+for entry in "${GITIGNORE_ENTRIES[@]}"; do
+  if ! grep -qF "$entry" "$GLOBAL_GITIGNORE" 2>/dev/null; then
+    echo "$entry" >> "$GLOBAL_GITIGNORE"
+    ADDED_ENTRIES+=("$entry")
+  fi
+done
+
+if [ ${#ADDED_ENTRIES[@]} -gt 0 ]; then
+  echo "  ✓ global .gitignore → added collab-proof entries"
+  echo "    (WORKLOG.md, session-history/*-proof.html excluded from accidental commits)"
+else
+  echo "  · global .gitignore already up to date"
+fi
+
 echo ""
 echo "Done. Start a Claude Code session and run:"
 echo ""

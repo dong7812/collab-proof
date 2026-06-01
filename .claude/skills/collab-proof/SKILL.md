@@ -43,6 +43,11 @@ Show the user: `Signal: HIGH / MEDIUM / LOW — [one-line reason]`
 
 Run all four frames simultaneously. Score each 0.0–1.0. Prune frames < 0.4.
 
+**Pruning rule exception**: Frame A (Technical) is never pruned if Layer 01 classified HIGH signal.
+A boilerplate-heavy session (lots of code generated, no discussion) will naturally score Frame B/C near 0 —
+but Frame A still has substance. Pruning Frame A in this case would discard the only evidence that anything
+happened. Let Frame A survive alone and classify intent as FEATURE_BUILDING or FLOW_STATE accordingly.
+
 **Frame A — Technical** (What choices were made in the code?)
 Look at: git diff, file names, function signatures, new interfaces
 
