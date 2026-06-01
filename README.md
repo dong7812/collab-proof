@@ -49,23 +49,19 @@ Reads `git log` and `git diff` to classify signal level:
 
 ### Layer 02 — WorkIntentClassifier (ADHD tree-of-thought)
 
-Fans out four cognitive frames simultaneously. Each frame is scored 0.0–1.0 against concrete anchors, then pruned below 0.4:
+Fans out four cognitive frames simultaneously, scores each, prunes frames below 0.4:
 
-| Frame | Scoring anchors | What it catches |
-|---|---|---|
-| A — Technical | 1.0 new module · 0.5 logic change · 0.1 typo | Code churn depth, architectural mutations |
-| B — Uncertainty | 1.0 rollback/doubt · 0.5 advice-seeking · 0.0 direct exec | Reverts, direction changes, hedging |
-| C — Fork | 1.0 explicit A-vs-B · 0.5 tradeoff mention · 0.0 none | Alternatives discussed, constraints |
-| D — AI contribution | 1.0 bug catch · 0.6 scaffold · 0.2 transcription | Claude's actual impact on the outcome |
-
-**High-Speed Execution Guard**: if `Frame A ≥ 0.8` AND `Frame D ≥ 0.6`, the session is classified `FEATURE_BUILDING / HIGH` even when Frame B and C are 0.0 — boilerplate-heavy sessions are not silenced.
-
-| Surviving frames | Dominant intent |
+| Frame | What it catches |
 |---|---|
-| A high + D mid-high (B, C low) | `FEATURE_BUILDING` |
-| B high + A/D high | `BUG_FIXING` or `STUCK` |
-| C high + A high | `REFACTORING` or `EXPLORING` |
-| All frames < 0.4 | `FLOW_STATE` or LOW |
+| A — Technical | Code churn depth, new modules, architectural changes |
+| B — Uncertainty | Reverts, direction changes, developer doubt |
+| C — Fork | Alternatives discussed, explicit A-vs-B comparisons |
+| D — AI contribution | Where Claude changed the outcome vs. developer-driven work |
+
+Classifies dominant intent from surviving frames:
+`FEATURE_BUILDING` · `BUG_FIXING` · `REFACTORING` · `EXPLORING` · `STUCK` · `FLOW_STATE`
+
+For scoring rubric and exception rules → [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### Layer 03 — OutputGenerator
 
@@ -226,22 +222,6 @@ collab-proof is signal-filtered. It produces nothing for routine sessions and fu
 - [x] Full automation via `SessionEnd` hook (available since Claude Code 1.0.84)
 - [x] Git-signed proof via `git notes` — SHA-256 of session HTML anchored to commit, shared via `git push origin refs/notes/commits`
 - [ ] `awesome-claude-skills` registry listing
-
----
-
-## Theoretical foundations
-
-collab-proof's 3-layer pipeline is a prompt-native adaptation of [Vela](https://github.com/dong7812/vela)'s signal filtering architecture. The academic literature that shaped Vela's design also informs collab-proof's layer structure:
-
-| Paper | Where it applies in collab-proof |
-|---|---|
-| Horvitz (1999) *Mixed-Initiative Interaction*, CHI | Layer 01 threshold logic — act only when E[utility(act)] > E[utility(wait)]; silence is correct behavior |
-| Liu et al. (2021) *ESConv*, ACL | Layer 02 intent classification — multi-class strategy mapping from signal features |
-| Deng et al. (2023) *Survey on Proactive Dialogue Systems*, IJCAI | 3-layer signal → intent → output pipeline structure |
-| Deng, Liao et al. (2023) *Prompting LLMs for Proactive Dialogues*, EMNLP | Layer 03 strategy-specific prompt separation |
-| Bohus & Rudnicky (2005) *Error Handling in Conversational Systems* | Frame B (Uncertainty) — distinguishing transient vs. sustained uncertainty signals |
-| Reimers & Gurevych (2019) *Sentence-BERT*, EMNLP | Semantic similarity as a proxy for session depth (ADHD frame scoring) |
-| Sacks, Schegloff & Jefferson (1974) *Turn-taking in Conversation* | Conversation signal weighting in Layer 01 — interrogative placement as confusion indicator |
 
 ---
 
