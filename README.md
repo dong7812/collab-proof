@@ -25,7 +25,7 @@ The review step is the point. The artifacts aren't just documentation — they'r
 ## Scope
 
 - Claude Code skill (`SKILL.md`) + slash command (`/collab-proof`) + two lifecycle hooks.
-- **Zero external dependencies.** The HTML renderer (`render.py`) uses Python stdlib only. No pip install.
+- **Zero external dependencies.** No pip install required.
 - **Read-only.** Reads git log, git diff, and conversation context. Makes no network calls, writes no config.
 - Generates three artifact types per session: decision log, session narrative, shareable HTML proof.
 - Signal filtering: low-signal sessions (routine implementation, no decision forks) produce no output.
@@ -77,14 +77,15 @@ cd collab-proof
 ./install.sh
 ```
 
-`install.sh` copies four files into `~/.claude/`:
+`install.sh` copies files into `~/.claude/`:
 
 ```
-~/.claude/skills/collab-proof/SKILL.md      ← skill definition
-~/.claude/skills/collab-proof/render.py     ← HTML renderer
-~/.claude/commands/collab-proof.md         ← /collab-proof command
-~/.claude/hooks/collab-proof-on-stop.sh     ← Stop hook (WORKLOG checkpoints)
-~/.claude/hooks/collab-proof-pre-compact.sh ← PreCompact hook (context checkpoints)
+~/.claude/skills/collab-proof/SKILL.md           ← skill definition
+~/.claude/commands/collab-proof.md               ← /collab-proof command
+~/.claude/hooks/collab-proof-on-stop.sh          ← Stop hook (WORKLOG checkpoints)
+~/.claude/hooks/collab-proof-on-session-end.sh   ← SessionEnd hook (full pipeline)
+~/.claude/hooks/collab-proof-pre-compact.sh      ← PreCompact hook
+~/.claude/hooks/collab-proof-sign-proof.sh       ← git notes proof anchoring
 ```
 
 And wires the hooks into `~/.claude/settings.json`. Running `install.sh` again is safe — it skips already-present hook entries.
@@ -99,17 +100,7 @@ Inside any Claude Code session:
 /collab-proof
 ```
 
-Claude runs the pipeline, writes the artifacts, then calls `python3 render.py` to generate the HTML proof. The command prints all written file paths and the `open` command for the HTML.
-
-To generate HTML from an existing session file outside Claude Code:
-
-```bash
-# Most recent session-history file in the current project
-python3 ~/.claude/skills/collab-proof/render.py
-
-# Specific session
-python3 ~/.claude/skills/collab-proof/render.py session-history/2026-06-01-1422.md
-```
+Claude runs the pipeline, writes all artifacts, generates the HTML proof directly, and anchors the proof to the current git commit via `git notes`. The command prints all written file paths.
 
 ---
 
