@@ -178,9 +178,20 @@ The `Stop` hook also writes lightweight checkpoints when ≥2 files change betwe
 
 | Hook | Event | Behavior |
 |---|---|---|
-| `SessionEnd` | When the session closes | Automatically runs full pipeline — WORKLOG + session file + HTML proof |
-| `Stop` | End of each Claude turn | If ≥2 files changed in git, appends a checkpoint line to WORKLOG.md |
-| `PreCompact` | Before context compaction | Writes a timestamped checkpoint marker to prevent silent context loss |
+| `SessionEnd` | When the session closes | Runs full pipeline — WORKLOG + session file + HTML proof + git notes anchoring |
+| `Stop` | End of each Claude turn | If ≥2 files changed, appends a checkpoint line to WORKLOG.md |
+| `PreCompact` | Before context compaction | Writes a checkpoint marker to prevent silent context loss |
+
+`sign-proof.sh` is called by `SessionEnd` automatically. Can also be run manually:
+```bash
+bash ~/.claude/hooks/collab-proof-sign-proof.sh
+
+# verify
+git notes --ref=collab-proof show
+
+# share with collaborators
+git push origin refs/notes/collab-proof
+```
 
 All hooks are no-ops outside a git repository and exit 0 silently.
 
@@ -220,7 +231,7 @@ collab-proof is signal-filtered. It produces nothing for routine sessions and fu
 - [x] WORKLOG one-liner + Stop hook checkpoints
 - [x] HTML proof artifact (self-contained, `file://`-ready)
 - [x] Full automation via `SessionEnd` hook (available since Claude Code 1.0.84)
-- [x] Git-signed proof via `git notes` — SHA-256 of session HTML anchored to commit, shared via `git push origin refs/notes/commits`
+- [x] Git-signed proof via `git notes` — SHA-256 anchored to commit in `refs/notes/collab-proof` namespace, shared via `git push origin refs/notes/collab-proof`
 - [ ] `awesome-claude-skills` registry listing
 
 ---
