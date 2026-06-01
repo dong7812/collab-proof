@@ -49,17 +49,23 @@ Reads `git log` and `git diff` to classify signal level:
 
 ### Layer 02 — WorkIntentClassifier (ADHD tree-of-thought)
 
-Fans out four cognitive frames simultaneously, scores each, prunes frames below 0.4:
+Fans out four cognitive frames simultaneously. Each frame is scored 0.0–1.0 against concrete anchors, then pruned below 0.4:
 
-| Frame | Lens | What it catches |
+| Frame | Scoring anchors | What it catches |
 |---|---|---|
-| A — Technical | What choices were made in the code? | Implementation decisions, interface changes |
-| B — Uncertainty | Where was the developer unsure? | Reverts, direction changes, hedging |
-| C — Fork | What could have gone differently? | Alternatives discussed, constraints |
-| D — AI contribution | Where did Claude change the outcome? | Suggestions adopted, problems identified |
+| A — Technical | 1.0 new module · 0.5 logic change · 0.1 typo | Code churn depth, architectural mutations |
+| B — Uncertainty | 1.0 rollback/doubt · 0.5 advice-seeking · 0.0 direct exec | Reverts, direction changes, hedging |
+| C — Fork | 1.0 explicit A-vs-B · 0.5 tradeoff mention · 0.0 none | Alternatives discussed, constraints |
+| D — AI contribution | 1.0 bug catch · 0.6 scaffold · 0.2 transcription | Claude's actual impact on the outcome |
 
-Classifies dominant intent from surviving frames:
-`FEATURE_BUILDING` · `BUG_FIXING` · `REFACTORING` · `EXPLORING` · `STUCK` · `FLOW_STATE`
+**High-Speed Execution Guard**: if `Frame A ≥ 0.8` AND `Frame D ≥ 0.6`, the session is classified `FEATURE_BUILDING / HIGH` even when Frame B and C are 0.0 — boilerplate-heavy sessions are not silenced.
+
+| Surviving frames | Dominant intent |
+|---|---|
+| A high + D mid-high (B, C low) | `FEATURE_BUILDING` |
+| B high + A/D high | `BUG_FIXING` or `STUCK` |
+| C high + A high | `REFACTORING` or `EXPLORING` |
+| All frames < 0.4 | `FLOW_STATE` or LOW |
 
 ### Layer 03 — OutputGenerator
 
