@@ -69,8 +69,6 @@ Generates artifacts proportional to signal level and surviving frame depth.
 
 ## Install
 
-Requires Python 3.7+ (stdlib only — ships with macOS).
-
 ```bash
 git clone https://github.com/dong7812/collab-proof
 cd collab-proof
