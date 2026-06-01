@@ -229,8 +229,24 @@ collab-proof is signal-filtered. It produces nothing for routine sessions and fu
 - [x] WORKLOG one-liner + Stop hook checkpoints
 - [x] HTML proof artifact (self-contained, `file://`-ready)
 - [x] Full automation via `SessionEnd` hook (available since Claude Code 1.0.84)
-- [ ] Git-signed proof via `git notes` — attach session HTML hash to the current commit without modifying the file tree (stdlib only, no crypto deps)
+- [x] Git-signed proof via `git notes` — SHA-256 of session HTML anchored to commit, shared via `git push origin refs/notes/commits`
 - [ ] `awesome-claude-skills` registry listing
+
+---
+
+## Theoretical foundations
+
+collab-proof's 3-layer pipeline is a prompt-native adaptation of [Vela](https://github.com/dong7812/vela)'s signal filtering architecture. The academic literature that shaped Vela's design also informs collab-proof's layer structure:
+
+| Paper | Where it applies in collab-proof |
+|---|---|
+| Horvitz (1999) *Mixed-Initiative Interaction*, CHI | Layer 01 threshold logic — act only when E[utility(act)] > E[utility(wait)]; silence is correct behavior |
+| Liu et al. (2021) *ESConv*, ACL | Layer 02 intent classification — multi-class strategy mapping from signal features |
+| Deng et al. (2023) *Survey on Proactive Dialogue Systems*, IJCAI | 3-layer signal → intent → output pipeline structure |
+| Deng, Liao et al. (2023) *Prompting LLMs for Proactive Dialogues*, EMNLP | Layer 03 strategy-specific prompt separation |
+| Bohus & Rudnicky (2005) *Error Handling in Conversational Systems* | Frame B (Uncertainty) — distinguishing transient vs. sustained uncertainty signals |
+| Reimers & Gurevych (2019) *Sentence-BERT*, EMNLP | Semantic similarity as a proxy for session depth (ADHD frame scoring) |
+| Sacks, Schegloff & Jefferson (1974) *Turn-taking in Conversation* | Conversation signal weighting in Layer 01 — interrogative placement as confusion indicator |
 
 ---
 

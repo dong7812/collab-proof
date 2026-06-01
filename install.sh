@@ -32,10 +32,12 @@ mkdir -p "${HOOKS_DIR}"
 cp "${SCRIPT_DIR}/hooks/pre-compact.sh"    "${HOOKS_DIR}/collab-proof-pre-compact.sh"
 cp "${SCRIPT_DIR}/hooks/on-stop.sh"        "${HOOKS_DIR}/collab-proof-on-stop.sh"
 cp "${SCRIPT_DIR}/hooks/on-session-end.sh" "${HOOKS_DIR}/collab-proof-on-session-end.sh"
+cp "${SCRIPT_DIR}/hooks/sign-proof.sh"     "${HOOKS_DIR}/collab-proof-sign-proof.sh"
 chmod +x "${HOOKS_DIR}/collab-proof-pre-compact.sh"
 chmod +x "${HOOKS_DIR}/collab-proof-on-stop.sh"
 chmod +x "${HOOKS_DIR}/collab-proof-on-session-end.sh"
-echo "  ✓ hooks        → PreCompact + Stop + SessionEnd"
+chmod +x "${HOOKS_DIR}/collab-proof-sign-proof.sh"
+echo "  ✓ hooks        → PreCompact + Stop + SessionEnd + sign-proof"
 
 # 5. Wire hooks into settings.json
 [ -f "${SETTINGS}" ] || echo '{}' > "${SETTINGS}"

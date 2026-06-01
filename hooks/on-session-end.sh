@@ -56,4 +56,10 @@ if [ -f "${RENDER_PY}" ]; then
     python3 "${RENDER_PY}" "${SESSION_FILE}" 2>/dev/null || true
 fi
 
+# git notes로 proof 앵커링
+SIGN_HOOK="${HOME}/.claude/hooks/collab-proof-sign-proof.sh"
+if [ -f "${SIGN_HOOK}" ]; then
+    bash "${SIGN_HOOK}" 2>/dev/null || true
+fi
+
 exit 0
