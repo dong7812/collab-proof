@@ -83,7 +83,7 @@ cd collab-proof
 ./install.sh
 ```
 
-Zero external dependencies. Python stdlib only. No pip install required.
+Zero external dependencies. No pip install required.
 
 Wires three hooks into `~/.claude/settings.json`:
 
@@ -139,9 +139,9 @@ Self-contained HTML. No CDN. Opens at `file://`. Includes token sub-panel: cache
 D score accumulates across sessions. Use it as a trend, not a scoreboard:
 
 ```
-2026-06-02 | REFACTORING   | HIGH | D:0.7 | cache:98% | tok:27618K | render.py 제거, 포지셔닝 재정의
-2026-06-01 | FEATURE_BUILD | HIGH | D:0.8 | cache:62% | tok:82K   | collab-proof 초기 릴리즈
-2026-05-28 | BUG_FIXING    | HIGH | D:1.0 | cache:71% | tok:33K   | TOCTOU 레이스컨디션 진단
+2026-06-02 | REFACTORING   | HIGH | D:0.7 | cache:98% | tok:27618K | pipeline refactor, repositioned
+2026-06-01 | FEATURE_BUILD | HIGH | D:0.8 | cache:62% | tok:82K   | initial release
+2026-05-28 | BUG_FIXING    | HIGH | D:1.0 | cache:71% | tok:33K   | TOCTOU race condition diagnosed
 ```
 
 ---

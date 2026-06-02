@@ -83,7 +83,7 @@ cd collab-proof
 ./install.sh
 ```
 
-외부 의존성 없음. Python 표준 라이브러리만 사용.
+외부 의존성 없음. pip install 불필요.
 
 훅 3개가 `~/.claude/settings.json`에 자동 등록됩니다:
 
@@ -139,8 +139,8 @@ cd collab-proof
 D score가 세션마다 누적됩니다. 스코어보드가 아닌 트렌드 지표로 사용하세요:
 
 ```
-2026-06-02 | REFACTORING   | HIGH | D:0.7 | cache:98% | tok:27618K | render.py 제거, 포지셔닝 재정의
-2026-06-01 | FEATURE_BUILD | HIGH | D:0.8 | cache:62% | tok:82K   | collab-proof 초기 릴리즈
+2026-06-02 | REFACTORING   | HIGH | D:0.7 | cache:98% | tok:27618K | 파이프라인 리팩터, 방향 재정의
+2026-06-01 | FEATURE_BUILD | HIGH | D:0.8 | cache:62% | tok:82K   | 초기 릴리즈
 2026-05-28 | BUG_FIXING    | HIGH | D:1.0 | cache:71% | tok:33K   | TOCTOU 레이스컨디션 진단
 ```
 
