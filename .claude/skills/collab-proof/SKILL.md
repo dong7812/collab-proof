@@ -188,14 +188,80 @@ If no real fork existed → write nothing. Never fabricate decisions.
 
 **Append to `WORKLOG.md`**:
 ```
-YYYY-MM-DD HH:MM | [intent] | HIGH | <verb phrase> — <why it mattered>
+YYYY-MM-DD HH:MM | [intent] | HIGH | D:[score] | cache:[hit%]% | tok:[total] | <verb phrase> — <why it mattered>
 ```
 
-**Run HTML renderer** (bash):
+Fields:
+- `D:[score]` — Frame D AI contribution score (0.0–1.0)
+- `cache:[hit%]%` — cache hit rate from token analysis (or `cache:n/a` if no data)
+- `tok:[total]` — total tokens this session (input + cache_read + cache_create + output, in K e.g. `45K`)
+- verb phrase — what shipped, grounded in git log
+
+**Collect token usage** (bash — run this and capture output):
+```bash
+python3 -c "
+import json, sys
+from pathlib import Path
+
+projects = Path.home() / '.claude/projects'
+files = sorted(projects.rglob('*.jsonl'), key=lambda f: f.stat().st_mtime, reverse=True)
+if not files:
+    print('no_data'); sys.exit()
+
+with open(files[0]) as fp:
+    lines = [json.loads(l) for l in fp if l.strip()]
+
+ti = to = cr = cc = 0
+turns = []
+for i, line in enumerate(lines):
+    if line.get('type') == 'assistant':
+        u = line.get('message', {}).get('usage', {})
+        if not u: continue
+        inp = u.get('input_tokens', 0)
+        ti += inp; to += u.get('output_tokens', 0)
+        cr += u.get('cache_read_input_tokens', 0)
+        cc += u.get('cache_creation_input_tokens', 0)
+        prompt = ''
+        for j in range(i-1, -1, -1):
+            if lines[j].get('type') == 'user':
+                c = lines[j].get('message', {}).get('content', '')
+                prompt = (c if isinstance(c, str) else next((x.get('text','') for x in c if isinstance(x,dict) and x.get('type')=='text'), ''))[:80]
+                break
+        turns.append((inp, prompt))
+
+total = ti + cr + cc
+hit = cr / total * 100 if total else 0
+print(f'input={ti} output={to} cache_read={cr} cache_create={cc} hit={hit:.0f} turns={len(turns)}')
+turns.sort(reverse=True)
+for idx, (tok, p) in enumerate(turns[:3]):
+    print(f'top{idx+1}={tok}|{p}')
+"
 ```
-python3 ~/.claude/skills/collab-proof/render.py
+
+Parse the output and include token stats in the session narrative. Then:
+
+**Generate `session-history/YYYY-MM-DD-HHMM-proof.html`** — write a self-contained HTML file (no external deps, inline CSS/JS only) with these sections:
+- Header: session date, intent, signal level, frame scores
+- "What shipped" section (from git log)
+- "AI contribution summary" (Frame D synthesis)
+- "Decisions" cards (from DECISIONS.md entries if any)
+- "Token usage" panel:
+  - Bar showing input / cache_read / cache_create / output proportions
+  - Cache hit rate with label (≥80% 🟢 efficient, 50–79% 🟡 moderate, <50% 🔴 high context churn)
+  - Top 3 expensive turns with token count and truncated prompt
+  - One-line optimization suggestion based on the pattern observed
+- Dark background (#1a1a2e), monospace font, no emoji in code — clean terminal aesthetic
+
+Write the HTML directly using bash:
+```bash
+python3 -c "
+content = '''<!DOCTYPE html>...'''  # full HTML string
+with open('session-history/YYYY-MM-DD-HHMM-proof.html', 'w') as f:
+    f.write(content)
+"
 ```
-If not found: `python3 render.py`
+
+After writing, show: `open session-history/YYYY-MM-DD-HHMM-proof.html`
 
 ---
 
@@ -203,7 +269,7 @@ If not found: `python3 render.py`
 
 Append one line to `WORKLOG.md` only:
 ```
-YYYY-MM-DD HH:MM | [intent] | MEDIUM | <verb phrase>
+YYYY-MM-DD HH:MM | [intent] | MEDIUM | D:[score] | cache:[hit%]% | tok:[total] | <verb phrase>
 ```
 
 ---

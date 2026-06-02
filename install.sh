@@ -18,11 +18,7 @@ mkdir -p "${SKILLS_DIR}"
 cp "${SCRIPT_DIR}/.claude/skills/collab-proof/SKILL.md" "${SKILLS_DIR}/SKILL.md"
 echo "  ✓ skill        → ${SKILLS_DIR}/SKILL.md"
 
-# 2. Renderer (used by /collab-proof automatically)
-cp "${SCRIPT_DIR}/render.py" "${SKILLS_DIR}/render.py"
-echo "  ✓ renderer     → ${SKILLS_DIR}/render.py"
-
-# 3. Slash command
+# 2. Slash command
 mkdir -p "${COMMANDS_DIR}"
 cp "${SCRIPT_DIR}/commands/collab-proof.md" "${COMMANDS_DIR}/collab-proof.md"
 echo "  ✓ command      → /collab-proof"

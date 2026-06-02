@@ -1,35 +1,40 @@
 # collab-proof
 
-A Claude Code skill that generates AI collaboration evidence from development sessions.
+A Claude Code skill that runs **static analysis on your AI collaboration sessions**.
 
-It answers a narrow but important question: **when you built something with AI, what exactly did each side contribute — and where is the proof?**
+Most session tools answer *"what did we talk about?"* or *"how many tokens did I use?"*  
+collab-proof answers *"how well did I collaborate with AI — and how can I improve?"*
 
-Most session-logging tools answer *"what did we talk about?"* collab-proof answers *"what decision was made, what was the alternative, and what did the AI actually contribute versus what did the developer drive?"* — grounded in git history, not conversation claims.
+It reads git history and session context, scores the collaboration across four cognitive frames, and writes artifacts you can review later and share as proof.
 
 ![collab-proof demo](demo/collab-proof-demo.gif)
 
 ---
 
-## Why I built this
+## The mental model
 
-When you're deep in a coding session with AI, you move fast. A decision gets made, a tradeoff gets discussed, a bug gets caught — and then you're already on to the next thing.
+Think of it like ESLint — but for AI collaboration quality.
 
-Later, you can't reconstruct it. The git log shows *what* changed. The conversation is gone or compacted. The reasoning that led to `Lua EVAL over MULTI/EXEC`, the moment Claude spotted the race condition you missed, the alternative you consciously ruled out — all of it evaporates.
+```
+ESLint:      code    → static analysis → quality report + improvement hints
+collab-proof: session → static analysis → collaboration quality + improvement hints + proof
+```
 
-I built collab-proof because I wanted a way to **capture what I missed while I was moving**. Not a manual journal. Not a summary I'd forget to write. Something that watches the session, infers what mattered, and holds it for me — so I can review it later and know exactly what happened and why.
-
-The review step is the point. The artifacts aren't just documentation — they're a checkpoint you come back to: *did the AI actually contribute something meaningful here, or did I just execute manually? what decision am I about to build on top of? what was I uncertain about that I should revisit?*
+The output has two audiences:
+- **Yourself** — where did AI actually contribute? where did I waste tokens? am I improving over sessions?
+- **Others** — here is calibrated evidence of what the AI contributed and what I decided
 
 ---
 
-## Scope
+## Why existing tools don't cover this
 
-- Claude Code skill (`SKILL.md`) + slash command (`/collab-proof`) + two lifecycle hooks.
-- **Zero external dependencies.** No pip install required.
-- **Read-only.** Reads git log, git diff, and conversation context. Makes no network calls, writes no config.
-- Generates three artifact types per session: decision log, session narrative, shareable HTML proof.
-- Signal filtering: low-signal sessions (routine implementation, no decision forks) produce no output.
-- `SessionEnd` hook is supported since Claude Code 1.0.84. collab-proof uses `SessionEnd` (full pipeline on close) + `Stop` (per-turn WORKLOG checkpoint) + `PreCompact` (context compaction marker).
+| Tool | What it answers |
+|---|---|
+| Claude Pulse, Rudel, AI Token Monitor | How many tokens, how much cost, activity heatmap |
+| Claude Code Analytics | Session similarity, transcript search |
+| **collab-proof** | **How well did we collaborate, and where did each side actually drive the outcome?** |
+
+Token trackers tell you *cost per session*. collab-proof tells you *quality of the collaboration* — calibrated against git history, not conversation claims.
 
 ---
 
@@ -43,29 +48,27 @@ Reads `git log` and `git diff` to classify signal level:
 
 | Signal | Condition | Output |
 |---|---|---|
-| `HIGH` | New file created, 4+ files modified, explicit option comparison in conversation, or bug diagnosed and fixed | Full artifacts |
+| `HIGH` | New file created, 4+ files modified, explicit option comparison, or bug diagnosed | Full artifacts |
 | `MEDIUM` | 1–3 files modified, no major discussion | WORKLOG one-liner only |
 | `LOW` | No code changes, planning only | Silence |
 
-### Layer 02 — WorkIntentClassifier (ADHD tree-of-thought)
+### Layer 02 — WorkIntentClassifier (ADHD 4-frame)
 
-Fans out four cognitive frames simultaneously, scores each, prunes frames below 0.4:
+Fans out four cognitive frames simultaneously, scores each 0.0–1.0, prunes frames below 0.4:
 
 | Frame | What it catches |
 |---|---|
 | A — Technical | Code churn depth, new modules, architectural changes |
-| B — Uncertainty | Reverts, direction changes, developer doubt |
+| B — Uncertainty | Reverts, direction changes, developer doubt signals |
 | C — Fork | Alternatives discussed, explicit A-vs-B comparisons |
 | D — AI contribution | Where Claude changed the outcome vs. developer-driven work |
 
-Classifies dominant intent from surviving frames:
+Classifies dominant intent from surviving frames:  
 `FEATURE_BUILDING` · `BUG_FIXING` · `REFACTORING` · `EXPLORING` · `STUCK` · `FLOW_STATE`
-
-For scoring rubric and exception rules → [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### Layer 03 — OutputGenerator
 
-Generates artifacts proportional to signal level and surviving frame depth.
+Collects token usage from the current session (input / cache_read / cache_create / output), then generates artifacts proportional to signal level and surviving frame depth.
 
 ---
 
@@ -88,7 +91,9 @@ cd collab-proof
 ~/.claude/hooks/collab-proof-sign-proof.sh       ← git notes proof anchoring
 ```
 
-And wires the hooks into `~/.claude/settings.json`. Running `install.sh` again is safe — it skips already-present hook entries.
+Wires hooks into `~/.claude/settings.json` automatically. Running `install.sh` again is safe.
+
+**Zero external dependencies.** Python stdlib only. No pip install required.
 
 ---
 
@@ -100,77 +105,56 @@ Inside any Claude Code session:
 /collab-proof
 ```
 
-Claude runs the pipeline, writes all artifacts, generates the HTML proof directly, and anchors the proof to the current git commit via `git notes`. The command prints all written file paths.
+Runs the full pipeline: signal detection → frame scoring → token analysis → artifacts → HTML proof.
 
 ---
 
 ## Output
 
-All artifacts are written into the project root where Claude Code is running.
+### `WORKLOG.md` — the observation harness
+
+Running log appended per session. Designed for trend analysis across sessions:
+
+```
+2026-06-02 12:10 | FEATURE_BUILDING | HIGH | D:0.9 | cache:85% | tok:45K | PR fork 관계 복구 후 재제출
+2026-06-01 15:00 | FEATURE_BUILDING | HIGH | D:0.8 | cache:62% | tok:82K | collab-proof 초기 릴리즈
+2026-05-28 09:30 | BUG_FIXING       | HIGH | D:1.0 | cache:71% | tok:33K | TOCTOU 레이스컨디션 진단
+```
+
+Fields: `D:` = AI contribution score · `cache:` = cache hit rate · `tok:` = total tokens (K)
+
+Over time, WORKLOG becomes your collaboration quality history — D score trend, token efficiency per task type, which intent classes cost the most context.
 
 ### `DECISIONS.md`
 
-Appended per session. One entry per real decision fork (Frame C must confirm alternatives existed).
+One entry per real decision fork. The `AI contribution` field is the core — calibrated, not promotional:
 
 ```markdown
 ## 2026-06-01 Rate limiter atomicity via Lua EVAL
 
-**Context**: Redis ZCARD + ZADD across two round trips creates a TOCTOU race
-under concurrent requests.
+**Context**: Redis ZCARD + ZADD across two round trips creates a TOCTOU race.
 **Decision**: Moved PRUNE + CHECK + ADD into a single Lua EVAL script.
 **Alternatives considered**: MULTI/EXEC pipeline, optimistic locking with retry.
-**Reasoning**: Lua scripts run single-threaded on Redis — no observable intermediate
-state. 1 round trip vs 3.
 **AI contribution**:
   - Identified: TOCTOU window between ZCARD and ZADD that developer had not noticed
   - Suggested: Lua EVAL approach after reviewing Redis atomicity guarantees
   - Developer-driven: Final implementation, decision to use Lua over MULTI/EXEC
-**Intent class**: BUG_FIXING
 **Signal score**: HIGH
-**Outcome**: implemented
 ```
 
-The `AI contribution` field is the core of the skill. It is calibrated — neither
-overclaiming ("Claude built this") nor dismissing ("developer did everything").
-If no meaningful AI contribution occurred, the field reads: *"Developer-driven session. Claude executed instructions."*
+If no meaningful AI contribution occurred: *"Developer-driven session. Claude executed instructions."*
 
 ### `session-history/YYYY-MM-DD-HHMM.md`
 
-One file per session. Sections:
-
-| Section | Content |
-|---|---|
-| `What shipped` | Concrete deliverables grounded in git log |
-| `What was figured out` | Reasoning, tradeoffs, debugging — what developers forget |
-| `Decisions made this session` | References to DECISIONS.md entries |
-| `Where it got hard` | Frame B findings: uncertainty, reverts, STUCK signals |
-| `AI contribution summary` | Frame D synthesis — one calibrated paragraph |
-| `Next steps inferred` | What's obviously incomplete based on the session |
+Session narrative grounded in git log. Sections: What shipped · What was figured out · Where it got hard · AI contribution summary · Next steps inferred.
 
 ### `session-history/YYYY-MM-DD-HHMM-proof.html`
 
-Self-contained single HTML file. No CDN. No external resources. Opens at `file://`.
-
-Contents:
-- Header: project name, date, intent badge, signal score bar
-- Cognitive frames: which lenses fired, which were pruned, each score
-- Decision cards: one per DECISIONS.md entry, AI contribution highlighted
-- Session narrative sections
-- Footer: last git commit hash of the session (tamper-evident timestamp)
-
-### `WORKLOG.md`
-
-Running one-liner log, appended per session:
-
-```
-2026-06-01 14:22 | BUG_FIXING | HIGH | Added Lua EVAL atomicity — eliminated TOCTOU race under concurrent requests
-```
-
-The `Stop` hook also writes lightweight checkpoints when ≥2 files change between turns:
-
-```
-2026-06-01 14:31 | checkpoint | files_changed:3 | branch:main
-```
+Self-contained HTML. No CDN. Opens at `file://`. Includes token usage panel:
+- Input / cache / output proportion bar
+- Cache hit rate with efficiency label (≥80% efficient · 50–79% moderate · <50% high churn)
+- Top 3 most expensive turns with prompt preview
+- One-line optimization suggestion based on observed pattern
 
 ---
 
@@ -178,87 +162,38 @@ The `Stop` hook also writes lightweight checkpoints when ≥2 files change betwe
 
 | Hook | Event | Behavior |
 |---|---|---|
-| `SessionEnd` | When the session closes | Runs full pipeline — WORKLOG + session file + HTML proof + git notes anchoring |
-| `Stop` | End of each Claude turn | If ≥2 files changed, appends a checkpoint line to WORKLOG.md |
-| `PreCompact` | Before context compaction | Writes a checkpoint marker to prevent silent context loss |
-
-`sign-proof.sh` is called by `SessionEnd` automatically. Can also be run manually:
-```bash
-bash ~/.claude/hooks/collab-proof-sign-proof.sh
-
-# verify
-git notes --ref=collab-proof show
-
-# share with collaborators
-git push origin refs/notes/collab-proof
-```
-
-> **Squash Merge warning**: `git notes` are tied to a specific commit SHA. Squash and Merge on GitHub rewrites the hash — the note is orphaned. If your team uses squash merges, use `--commit-footer` to embed the hash in the commit message instead (survives squash):
-> ```bash
-> bash ~/.claude/hooks/collab-proof-sign-proof.sh --commit-footer
-> ```
-
-All hooks are no-ops outside a git repository and exit 0 silently.
+| `SessionEnd` | Session closes | Full pipeline — all artifacts + git notes anchoring |
+| `Stop` | End of each turn | If ≥2 files changed, appends checkpoint to WORKLOG |
+| `PreCompact` | Before context compaction | Writes snapshot marker to preserve context before loss |
 
 ---
 
-## When it helps — and when it doesn't
-
-collab-proof is signal-filtered. It produces nothing for routine sessions and full artifacts only when something worth recording actually happened.
-
-**Produces useful output:**
-
-| Session type | Why it's valuable |
-|---|---|
-| Design decision with alternatives | Records the fork — what was chosen and what was ruled out |
-| Bug with root cause diagnosis | Captures the WHY, not just the fix — impossible to reconstruct from git log |
-| Direction change mid-session | Frame B catches the uncertainty; documents what changed and why |
-| Architecture discussion | Multiple frames fire; AI contribution field separates Claude's input from developer judgment |
-
-**Produces little or nothing:**
-
-| Session type | Why |
-|---|---|
-| "Change this text / fix this typo" | No decision, no diagnosis — nothing to infer |
-| Pure implementation with no discussion | File changes exist but no reasoning to capture |
-| Planning session with no code | LOW signal — no git changes to ground the narrative |
-
-**The honest version:** roughly 30–40% of sessions produce genuinely useful artifacts. The rest are correctly silenced. A WORKLOG checkpoint still runs on active turns, so even quiet sessions leave a minimal trace.
-
----
-
-## Sharing the HTML proof
-
-The HTML proof is self-contained (`file://`-ready) but needs to be accessible to share externally.
-
-**Quick options:**
+## Sharing the proof
 
 ```bash
 # GitHub Gist (one command)
 gh gist create session-history/YYYY-MM-DD-HHMM-proof.html --public
 
-# GitHub Pages (if repo is public)
-# Copy to docs/ and push — GitHub Pages serves it automatically
-
-# Simple local share (same network)
-python3 -m http.server 8080
-# → http://localhost:8080/session-history/YYYY-MM-DD-HHMM-proof.html
+# Verify git-anchored proof
+git notes --ref=collab-proof show
 ```
 
-For portfolio or hiring use, GitHub Gist is the fastest path — one command, permanent URL, no setup.
+> **Squash merge warning**: `git notes` are tied to a commit SHA. Squash-and-merge rewrites the hash — use `--commit-footer` to embed the anchor in the commit message instead (survives squash).
 
 ---
 
 ## Roadmap
 
-- [x] Vela 3-layer pipeline (prompt-native, no Python install)
-- [x] ADHD 4-frame tree-of-thought in Layer 02
+- [x] Vela 3-layer pipeline (prompt-native, zero dependencies)
+- [x] ADHD 4-frame WorkIntentClassifier
 - [x] DECISIONS.md with calibrated AI contribution field
-- [x] session-history narrative
-- [x] WORKLOG one-liner + Stop hook checkpoints
-- [x] HTML proof artifact (self-contained, `file://`-ready)
-- [x] Full automation via `SessionEnd` hook (available since Claude Code 1.0.84)
-- [x] Git-signed proof via `git notes` — SHA-256 anchored to commit in `refs/notes/collab-proof` namespace, shared via `git push origin refs/notes/collab-proof`
+- [x] Session narrative (session-history/)
+- [x] WORKLOG with D score + cache hit rate + token count per entry
+- [x] Token usage analysis — cache efficiency, top expensive turns, optimization hints
+- [x] HTML proof with token panel (self-contained, `file://`-ready)
+- [x] Full automation via `SessionEnd` hook (Claude Code 1.0.84+)
+- [x] Git-signed proof via `git notes` (SHA-256 anchored, `refs/notes/collab-proof`)
+- [ ] `/collab-review` — trend view across sessions (D score trajectory, token efficiency over time)
 - [ ] `awesome-claude-skills` registry listing
 
 ---
