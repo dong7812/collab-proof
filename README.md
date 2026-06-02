@@ -9,6 +9,8 @@ It reads git history and session context, scores the collaboration across four c
 
 ![collab-proof demo](demo/collab-proof-demo.gif)
 
+[한국어](README.ko.md)
+
 ---
 
 ## The mental model
