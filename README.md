@@ -71,7 +71,7 @@ Frame D is the core. The rubric has fixed anchors (0.2 / 0.6 / 1.0) to reduce va
 
 ### Layer 03 — Output
 
-Generates artifacts proportional to signal level. Collects token usage (cache hit rate, expensive turns) as a sub-panel in the HTML proof.
+Generates artifacts proportional to signal level. Also reads token usage from `~/.claude/projects/` JSONL files (Python file I/O — no API calls, no additional cost) and includes cache hit rate, top expensive turns, and an optimization note as a sub-panel in the HTML proof.
 
 ---
 
@@ -87,11 +87,15 @@ Zero external dependencies. Python stdlib only. No pip install required.
 
 Wires three hooks into `~/.claude/settings.json`:
 
-| Hook | When | What |
-|---|---|---|
-| `SessionEnd` | Session closes | Full pipeline automatically |
-| `Stop` | Each turn | WORKLOG checkpoint if ≥2 files changed |
-| `PreCompact` | Before compaction | Snapshot before context loss |
+| Hook | When | What | Blocking |
+|---|---|---|---|
+| `SessionEnd` | Session closes | Full pipeline automatically | No — async background process |
+| `Stop` | Each turn | WORKLOG checkpoint if ≥2 files changed | No — async background process |
+| `PreCompact` | Before compaction | Snapshot before context loss | Yes — minimal (one file write) |
+
+`SessionEnd` and `Stop` run in a background subshell (`disown`) so Claude Code is never blocked. Errors are logged to `/tmp/collab-proof-*.log`. `PreCompact` stays synchronous because timing matters — it must complete before compaction — but is kept to a single file write.
+
+Hooks are wired via `~/.claude/settings.json`. They are not an officially guaranteed API — a Claude Code update could change hook behavior. If hooks stop firing silently, check `/tmp/collab-proof-session-end.log` to diagnose.
 
 ---
 
