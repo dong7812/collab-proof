@@ -1,8 +1,10 @@
 # collab-proof
 
-Claude Code 세션이 끝난 후, AI가 실제로 무엇을 기여했고 내가 무엇을 결정했는가?
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Zero dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)
 
-collab-proof는 그 답을 구조화하고 기록하는 **보조 회고 도구**입니다.
+세션 초반에는 Claude가 뭘 했는지 알고 있습니다. 두 시간 뒤엔 경계가 흐려집니다.
+
+collab-proof는 Claude Code 세션이 끝난 후, 증발하기 전에 기록을 남기는 **보조 회고 도구**입니다.
 
 ![collab-proof 데모](demo/collab-proof-demo.gif)
 
@@ -11,6 +13,8 @@ collab-proof는 그 답을 구조화하고 기록하는 **보조 회고 도구**
 ---
 
 ## 이 도구가 무엇인지 (그리고 무엇이 아닌지)
+
+AI 협업의 ESLint라고 생각하면 됩니다 — 정밀하게 측정하거나 막는 도구가 아니라, AI가 조용히 방향을 바꾼 순간을 잡아서 기록하는 도구입니다.
 
 collab-proof는 정밀 측정 시스템이 아닙니다. D score는 명시적인 루브릭을 사용해 LLM이 평가한 값입니다 — 정확한 수치가 아닌 방향 지표로 사용하세요.
 
@@ -90,7 +94,7 @@ cd collab-proof
 | 훅 | 시점 | 동작 | 블로킹 |
 |---|---|---|---|
 | `SessionEnd` | 세션 종료 | 전체 파이프라인 자동 실행 | 없음 — 비동기 백그라운드 |
-| `Stop` | 매 턴 종료 | 2개+ 파일 변경 시 WORKLOG 체크포인트 | 없음 — 비동기 백그라운드 |
+| `Stop` | 매 턴 종료 | 새 커밋 감지 시 WORKLOG 기록 (커밋 해시 기반 중복 제거) | 없음 — 비동기 백그라운드 |
 | `PreCompact` | 컨텍스트 압축 전 | 스냅샷 마커 기록 | 있음 — 파일 한 줄 쓰기만 |
 
 `SessionEnd`와 `Stop`은 백그라운드 서브셸(`disown`)에서 실행되므로 Claude Code가 블로킹되지 않습니다. 에러는 `/tmp/collab-proof-*.log`에 기록됩니다. `PreCompact`는 타이밍이 중요해 동기 유지하지만 파일 한 줄 쓰기만 수행합니다.
