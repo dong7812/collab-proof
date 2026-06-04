@@ -94,7 +94,7 @@ Wires three hooks into `~/.claude/settings.json`:
 | Hook | When | What | Blocking |
 |---|---|---|---|
 | `SessionEnd` | Session closes | Full pipeline automatically | No — async background process |
-| `Stop` | Each turn | WORKLOG checkpoint if ≥2 files changed | No — async background process |
+| `Stop` | Each turn | WORKLOG entry per new commit (deduped by commit hash) | No — async background process |
 | `PreCompact` | Before compaction | Snapshot before context loss | Yes — minimal (one file write) |
 
 `SessionEnd` and `Stop` run in a background subshell (`disown`) so Claude Code is never blocked. Errors are logged to `/tmp/collab-proof-*.log`. `PreCompact` stays synchronous because timing matters — it must complete before compaction — but is kept to a single file write.
