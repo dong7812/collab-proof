@@ -1,8 +1,10 @@
 # collab-proof
 
-After a Claude Code session, what did the AI actually contribute — and what did you drive?
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Zero dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)
 
-collab-proof is an **assisted retrospective** that structures the answer and keeps a record.
+You know what Claude contributed at the start of the session. Two hours later, the boundary blurs.
+
+collab-proof is an **assisted retrospective** that runs after a Claude Code session and keeps a record before it evaporates.
 
 ![collab-proof demo](demo/collab-proof-demo.gif)
 
@@ -11,6 +13,8 @@ collab-proof is an **assisted retrospective** that structures the answer and kee
 ---
 
 ## What it is (and what it isn't)
+
+Think of it as an ESLint for AI collaboration — not something that blocks or measures precisely, but something that catches the moments where AI quietly shifted direction and records them before you forget.
 
 collab-proof is not a measurement system. The D score is LLM-assessed using an explicit rubric — treat it as a directional indicator, not a precise metric.
 
